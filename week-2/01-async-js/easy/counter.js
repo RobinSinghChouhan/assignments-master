@@ -31,7 +31,7 @@ function readFromFile()
     return p;    
 }
 
-function writeToFile()
+function writeToFile(fileContent)
 {
     fs.writeFile("a.txt","hello     world    my    name   is       raman","utf-8",function(err,data){
         console.log(data);
@@ -43,13 +43,9 @@ function removeSpacesAndWrite()
     readFromFile().then(function(data){
         let newContent = "";
         let fileContent =  data.trim().replace(/\s+/g, ' ');;
-        // newContent = data.replace(/\s+/g, '');
-        // newContent = fileContent.map((value)=>{
-        //     if (value!=undefined && value.length>0){
-        //         return (value+" ");
-        //     }
-        // })
-        console.log(fileContent);
+        fs.writeFile("a.txt",fileContent,"utf-8",function(err,data){
+            console.log(data);
+        })
     })
 }
 
