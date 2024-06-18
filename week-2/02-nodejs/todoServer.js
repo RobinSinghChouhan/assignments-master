@@ -39,86 +39,109 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-  const express = require('express');
-  const bodyParser = require('body-parser');
-  
-  const app = express();
+const express = require("express");
+const fs = require("fs");
+const bodyParser = require("body-parser");
 
-  let todos = 
-    [
-      
-    ]
-  
-  app.use(bodyParser.json());
+const app = express();
 
-  app.get("/todos",(req,res)=>{
-    res.status(200).send(todos);
+let todos = [];
+fs.readFile("todos.json", "utf-8", (err, data) => {
+  todos = JSON.parse(data);
+});
+
+app.use(bodyParser.json());
+
+app.get("/todos", (req, res) => {
+  res.status(200).send(todos);
+});
+
+app.get("/todos/:id", (req, res) => {
+  const id = req.params.id;
+  const todo = todos.filter((todo) => {
+    if (id == todo.id) {
+      return true;
+    }
   });
+  if (todo) {
+    res.status(200).send(todo);
+  }else{
 
-  app.get("/todos/:id",(req,res)=>{
-    const id = req.params.id;
-    const todo = todos.filter((todo)=>{
-      if(id == todo.id){
-        res.status(200).send(todo);
-        return true;
-      }
-    });
-    res.status(404).send('Todo not found');
+    res.status(404).send("Todo not found");
+  }
+
+});
+
+app.post("/todos", (req, res) => {
+  const id = todos.length + 1;
+  const title = req.body.title;
+  const desc = req.body.description;
+  todos.push({
+    id: id,
+    title: title,
+    description: desc,
+    completed: false,
   });
+  writeToFile(todos);
+  res.status(201).send({ id: id });
+});
 
-  app.post("/todos",(req,res)=>{
-    const id = todos.length+1;
-    const title = req.body.title;
-    const desc = req.body.description;
-    todos.push({
-      "id":id,
-      "title":title,
-      "description":desc,
-      "completed": false
-    });
-    res.status(201).send({"id":id});
+app.put("/todos/:id", (req, res) => {
+  const id = req.params.id;
+  const title = req.body.title;
+  const description = req.body.description;
+  const completed = req.body.completed;
+  const todo = todos.filter((todo) => {
+    if (todo.id == id) {
+      todo.title = title;
+      todo.description = description;
+      todo.completed = completed;
+      return todo;
+    }
   });
+  if (todo) {
+    writeToFile(todos);
+    res.status(200).send("Todo updated");
+  }else{
 
-  app.put("/todos/:id",(req,res)=>{
-    const id = req.params.id;
-    const title = req.body.title;
-    const description = req.body.description;
-    const completed = req.body.completed;
-    todos.filter((todo)=>{
-      if(todo.id==id)
-        {
-        todo.title = title;
-        todo.description = description;
-        todo.completed = completed;
-        res.status(200).send('Todo updated');
-        return todo;
-        }
-    });
-    res.status(404).send('Todo not found');
+    res.status(404).send("Todo not found");
+  }
+});
+
+app.delete("/todos/:id", (req, res) => {
+  const id = req.params.id;
+  const length = todos.length;
+  todos = todos.filter((todo) => {
+    if (todo.id != id) {
+      return true;
+    }
   });
+  if (length > todos.length) {
+    writeToFile(todos);
+    res.status(200).send("Todo deleted");
+  } else {
+    res.status(404).send("Todo not found");
+  }
+});
 
-  app.delete("/todos/:id",(req,res)=>{
-    const id = req.params.id;
-    const length = todos.length;
-    todos = todos.filter((todo)=>{
-      if(todo.id!=id){
-        return true;
-      }
-    });
-    if (length > todos.length)
+app.use((req, res) => {
+  res.status(404).send("Route not Found");
+});
+
+app.listen(3000, () => {
+  console.log("Running on port 3000");
+});
+
+function writeToFile(todos)
+{
+  fs.writeFile("todos.json",JSON.stringify(todos,null,2),(err)=>{
+    if(err)
       {
-        res.status(200).send('Todo deleted');
+        console.log("Error writing to file");
       }else{
-        res.status(404).send('Todo not found');
+        console.log("File updated");
       }
   });
+}
 
-  app.use((req,res)=>{
-   res.status(404).send('Route not Found'); 
-  });
-
-  app.listen(3000,()=>{
-    console.log("Running on port 3000")
-  })
-
-  module.exports = app;
+module.exports = app;
