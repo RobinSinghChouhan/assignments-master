@@ -43,7 +43,82 @@
   const bodyParser = require('body-parser');
   
   const app = express();
+
+  let todos = 
+    [
+      
+    ]
   
   app.use(bodyParser.json());
-  
+
+  app.get("/todos",(req,res)=>{
+    res.status(200).send(todos);
+  });
+
+  app.get("/todos/:id",(req,res)=>{
+    const id = req.params.id;
+    const todo = todos.filter((todo)=>{
+      if(id == todo.id){
+        res.status(200).send(todo);
+        return true;
+      }
+    });
+    res.status(404).send('Todo not found');
+  });
+
+  app.post("/todos",(req,res)=>{
+    const id = todos.length+1;
+    const title = req.body.title;
+    const desc = req.body.description;
+    todos.push({
+      "id":id,
+      "title":title,
+      "description":desc,
+      "completed": false
+    });
+    res.status(201).send({"id":id});
+  });
+
+  app.put("/todos/:id",(req,res)=>{
+    const id = req.params.id;
+    const title = req.body.title;
+    const description = req.body.description;
+    const completed = req.body.completed;
+    todos.filter((todo)=>{
+      if(todo.id==id)
+        {
+        todo.title = title;
+        todo.description = description;
+        todo.completed = completed;
+        res.status(200).send('Todo updated');
+        return todo;
+        }
+    });
+    res.status(404).send('Todo not found');
+  });
+
+  app.delete("/todos/:id",(req,res)=>{
+    const id = req.params.id;
+    const length = todos.length;
+    todos = todos.filter((todo)=>{
+      if(todo.id!=id){
+        return true;
+      }
+    });
+    if (length > todos.length)
+      {
+        res.status(200).send('Todo deleted');
+      }else{
+        res.status(404).send('Todo not found');
+      }
+  });
+
+  app.use((req,res)=>{
+   res.status(404).send('Route not Found'); 
+  });
+
+  app.listen(3000,()=>{
+    console.log("Running on port 3000")
+  })
+
   module.exports = app;
