@@ -16,6 +16,44 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const app = express();
+const port = process.env.PORT || 3000;
 
+app.get("/files",(req,res)=>{
+  const directoryPath = path.join(__dirname,'files');
+  fs.readdir(directoryPath,(err,files)=>{
+    if(err)
+      {
+        res.status(500).send('Internal Server error')
+      }
+      else
+      {
+        res.status(200).send({files})
+      }
+  });
+  
+});
+
+app.get("/file/:filename",async (req,res)=>{
+  const filePath = "./files/"+req.params.filename;
+  console.log("FIELPATH: "+filePath);
+  let fileData = "";
+  await fs.readFile(filePath,"utf-8",(err,data)=>{
+    if(err)
+      {
+        res.status(404).send("File not found");
+      }
+    fileData = data;
+    console.log(data);
+    res.status(200).send(fileData);
+  }); 
+});
+
+app.use((req,res)=>{
+res.status(404).send('Route not found');
+});
+
+app.listen(port,()=>{
+  console.log('running on port ${port}')
+});
 
 module.exports = app;

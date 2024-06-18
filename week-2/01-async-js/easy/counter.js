@@ -51,7 +51,20 @@ function removeSpacesAndWrite()
 
 
 // counterWithoutInterval();
-writeToFile();
-readFromFile();
-removeSpacesAndWrite();
+// writeToFile();
+// readFromFile();
+// removeSpacesAndWrite();
 console.log("after calling");
+
+let arr = [1,2,3,4,5];
+let b = arr.map(function(i){
+    return i*2;
+})
+console.log(b);
+
+let c = arr.filter(function(i){
+    if(i%2==0){
+        return i;
+    }
+})
+console.log(c);
